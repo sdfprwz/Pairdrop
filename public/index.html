@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PairDrop - Share Across Devices</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💧</text></svg>">
+<link rel="stylesheet" href="style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+<!-- Background blobs -->
+<div class="bg">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">💧</span>
+    <span class="logo-text">PairDrop</span>
+    <span class="badge">P2P</span>
+  </div>
+  <div class="header-actions">
+    <button id="btnAbout" class="icon-btn" title="About">ℹ️</button>
+    <button id="btnTheme" class="icon-btn" title="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<main class="main">
+  <!-- You card -->
+  <section class="you-card" id="youCard">
+    <div class="you-avatar" id="youAvatar" style="background:#3b82f6">❓</div>
+    <div class="you-info">
+      <div class="you-label">You are known as</div>
+      <div class="you-name" id="youName" title="Click to edit">Loading...</div>
+      <div class="you-device" id="youDevice">—</div>
+      <div class="you-id" id="youId">ID: ...</div>
+    </div>
+    <button class="edit-btn" id="editNameBtn" title="Change name">✎</button>
+  </section>
+
+  <!-- Room / share -->
+  <section class="room-card">
+    <div class="room-left">
+      <div class="room-label">Room</div>
+      <div class="room-value" id="roomName">public</div>
+      <div class="room-hint" id="roomHint">Anyone on same network + same room can find you</div>
+    </div>
+    <div class="room-actions">
+      <button class="btn btn-secondary" id="btnCopyLink">🔗 Copy Link</button>
+      <button class="btn btn-secondary" id="btnQR">📱 Show QR</button>
+    </div>
+  </section>
+
+  <!-- Peers grid -->
+  <section class="peers-section">
+    <h2 class="section-title">
+      <span>Nearby devices</span>
+      <span class="peer-count" id="peerCount">0 found</span>
+    </h2>
+    <div class="peers-grid" id="peersGrid">
+      <!-- injected by JS -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-icon">📡</div>
+        <p class="empty-title">Waiting for peers…</p>
+        <p class="empty-desc">Open this page on another device with the <b>same Room</b>.<br>Devices must be on the same Wi-Fi for best results.</p>
+        <div class="empty-steps">
+          <span>1. Copy Link</span>
+          <span class="arrow">→</span>
+          <span>2. Open on other device</span>
+          <span class="arrow">→</span>
+          <span>3. Tap peer to send</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Send zone -->
+  <section class="send-zone" id="dropZone">
+    <div class="drop-inner">
+      <div class="drop-icon">📂</div>
+      <p><b>Drop files here</b> to send to a peer</p>
+      <span>or click a device above to choose files</span>
+    </div>
+    <input type="file" id="fileInput" multiple hidden>
+  </section>
+
+  <!-- History -->
+  <section class="history" id="historySection" style="display:none">
+    <h3>Transfer history <button class="link-btn" id="clearHistory">clear</button></h3>
+    <div id="historyList"></div>
+  </section>
+
+  <p class="footer-hint">🔒 Files are sent directly via WebRTC. They never touch the server. Encrypted P2P transfer.</p>
+</main>
+
+<!-- Modals -->
+<div class="modal-overlay" id="sendModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="sendModalTitle">Send to ...</h3>
+      <button class="icon-btn close-btn" data-close="sendModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="send-options">
+        <button class="option-card" id="btnSendFiles">
+          <span class="opt-icon">📁</span>
+          <span class="opt-title">Send Files</span>
+          <span class="opt-desc">Photos, videos, docs</span>
+        </button>
+        <button class="option-card" id="btnSendText">
+          <span class="opt-icon">💬</span>
+          <span class="opt-title">Send Text</span>
+          <span class="opt-desc">Message or link</span>
+        </button>
+      </div>
+      <div class="text-send" id="textSendArea" style="display:none">
+        <textarea id="textInput" placeholder="Type a message or paste a link..." rows="4"></textarea>
+        <button class="btn btn-primary" id="btnDoSendText">Send Text →</button>
+      </div>
+      <div class="file-preview" id="filePreview" style="display:none"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="qrModal">
+  <div class="modal small">
+    <div class="modal-head">
+      <h3>Scan to pair</h3>
+      <button class="icon-btn close-btn" data-close="qrModal">✕</button>
+    </div>
+    <div class="modal-body center">
+      <div id="qrcode"></div>
+      <p class="qr-link" id="qrLink"></p>
+      <p class="qr-hint">Scan with phone camera. Both devices need same room.</p>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="receiveModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="receiveTitle">Incoming transfer</h3>
+      <button class="icon-btn close-btn" data-close="receiveModal">✕</button>
+    </div>
+    <div class="modal-body" id="receiveBody">
+      <!-- injected -->
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>About PairDrop Clone</h3>
+      <button class="icon-btn close-btn" data-close="aboutModal">✕</button>
+    </div>
+    <div class="modal-body about">
+      <p><b>PairDrop Clone</b> is an open, P2P file sharing platform inspired by <a href="https://pairdrop.net" target="_blank">PairDrop.net</a> & Snapdrop.</p>
+      <ul>
+        <li>🔐 End-to-end encrypted via WebRTC DataChannel (DTLS)</li>
+        <li>🚀 No server storage — files go directly between devices</li>
+        <li>🏠 Peer discovery via WebSocket signaling server + rooms</li>
+        <li>📱 Works across phones, tablets, laptops</li>
+      </ul>
+      <p><b>How it works:</b> Signaling server only exchanges SDP/ICE to establish WebRTC. Actual file bytes travel P2P. If WebRTC fails, a relay fallback via server is available.</p>
+      <p class="muted">Built with Node.js + Express + ws + WebRTC. STUN: Google.</p>
+    </div>
+  </div>
+</div>
+
+<!-- Name edit -->
+<div class="modal-overlay" id="nameModal">
+  <div class="modal small">
+    <div class="modal-head">
+      <h3>Change display name</h3>
+      <button class="icon-btn close-btn" data-close="nameModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <input id="nameInput" class="text-input" maxlength="20" placeholder="e.g. My Laptop">
+      <button class="btn btn-primary" id="btnSaveName" style="margin-top:12px;width:100%">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toasts -->
+<div class="toasts" id="toasts"></div>
+
+<!-- Connection status -->
+<div class="status-bar" id="statusBar">
+  <span class="status-dot" id="statusDot"></span>
+  <span id="statusText">Connecting...</span>
+</div>
+
+<script src="client.js"></script>
+</body>
+</html>

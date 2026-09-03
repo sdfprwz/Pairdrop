@@ -1,0 +1,20 @@
+{
+  "name": "pairdrop-clone",
+  "version": "1.0.0",
+  "description": "PairDrop clone - P2P file sharing platform via WebRTC (like Snapdrop / AirDrop for the browser)",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=18 <23"
+  },
+  "keywords": ["pairdrop", "snapdrop", "webrtc", "p2p", "file-sharing", "airdrop"],
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.17.0",
+    "uuid": "^9.0.0"
+  }
+}

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: pairdrop-clone
+    runtime: node
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Optional: override defaults without code changes
+      # - key: STUN_URLS
+      #   value: stun:stun.l.google.com:19302,stun:stun1.l.google.com:19302
+      # For reliable internet P2P (different networks), add a TURN server:
+      # - key: TURN_URLS
+      #   value: turn:your-turn-host:3478
+      # - key: TURN_USERNAME
+      #   sync: false
+      # - key: TURN_CREDENTIAL
+      #   sync: false
+      # Or dynamic coturn credentials:
+      # - key: TURN_SECRET
+      #   sync: false
