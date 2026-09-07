@@ -44,15 +44,23 @@
   </section>
 
   <!-- Room / share -->
+  <div class="warn-banner" id="legacyBanner" style="display:none">⚠️ You are in the legacy <b>public</b> room — <b>everyone on the internet</b> can see you. <button class="link-btn" id="btnLeavePublic">Create a private room →</button></div>
   <section class="room-card">
     <div class="room-left">
-      <div class="room-label">Room</div>
-      <div class="room-value" id="roomName">public</div>
-      <div class="room-hint" id="roomHint">Anyone on same network + same room can find you</div>
+      <div class="room-label">Room <span class="room-badge" id="roomBadge">…</span> <span class="room-badge net" id="netBadge" style="display:none">📶 Same Wi-Fi</span></div>
+      <div class="room-value" id="roomName">…</div>
+      <div class="room-hint" id="roomHint">Connecting…</div>
+      <div class="conn-info" id="connInfo">Checking P2P capability…</div>
     </div>
     <div class="room-actions">
       <button class="btn btn-secondary" id="btnCopyLink">🔗 Copy Link</button>
       <button class="btn btn-secondary" id="btnQR">📱 Show QR</button>
+      <button class="btn btn-secondary" id="btnNewRoom" title="Create a new private room">➕ New Private Room</button>
+    </div>
+    <div class="join-row">
+      <input id="joinRoomInput" class="text-input" maxlength="32" placeholder="Enter room code (e.g. a7x9k2)" style="max-width:220px">
+      <button class="btn btn-secondary" id="btnJoinRoom">Join</button>
+      <button class="btn btn-secondary" id="btnExitRoom" style="display:none">Exit to Same-WiFi room</button>
     </div>
   </section>
 
@@ -95,7 +103,7 @@
     <div id="historyList"></div>
   </section>
 
-  <p class="footer-hint">🔒 Files are sent directly via WebRTC. They never touch the server. Encrypted P2P transfer.</p>
+  <p class="footer-hint" id="footerHint">🔒 Files go directly via WebRTC when possible. If direct P2P fails they are relayed via the server as a fallback.</p>
 </main>
 
 <!-- Modals -->
@@ -153,6 +161,18 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="offerModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="offerTitle">Incoming file</h3>
+      <button class="icon-btn close-btn" data-close="offerModal">✕</button>
+    </div>
+    <div class="modal-body" id="offerBody">
+      <!-- injected: file offer with Accept/Decline. Nothing is downloaded until you Accept. -->
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="aboutModal">
   <div class="modal">
     <div class="modal-head">
@@ -167,7 +187,8 @@
         <li>🏠 Peer discovery via WebSocket signaling server + rooms</li>
         <li>📱 Works across phones, tablets, laptops</li>
       </ul>
-      <p><b>How it works:</b> Signaling server only exchanges SDP/ICE to establish WebRTC. Actual file bytes travel P2P. If WebRTC fails, a relay fallback via server is available.</p>
+      <p><b>How it works:</b> Signaling server only exchanges SDP/ICE to establish WebRTC. Actual file bytes travel P2P when possible. If WebRTC fails (strict NAT / different networks without TURN), an encrypted relay fallback via the server is used — the app always labels which path was used.</p>
+      <p><b>Rooms & privacy:</b> With no link you land in an automatic <b>same-network room</b> (derived from your public IP, hashed) — only devices on the same Wi-Fi / internet connection see each other. Share a <b>private room link/QR</b> to connect across networks. Nothing is ever auto-downloaded: every file needs your <b>Accept</b>.</p>
       <p class="muted">Built with Node.js + Express + ws + WebRTC. STUN: Google.</p>
     </div>
   </div>
